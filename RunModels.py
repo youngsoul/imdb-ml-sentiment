@@ -60,7 +60,7 @@ def do_gridsearch():
     X = df['review']
     y = df['sentiment']
     X_train, X_holdout, y_train, y_holdout = train_test_split(X, y, test_size=0.3, shuffle=True, stratify=y, random_state=222 )
-    tfidf = TfidfVectorizer(stop_words='english', min_df=2, max_df=0.8, ngram_range=(1,4))
+    tfidf = TfidfVectorizer(stop_words='english', max_df=0.8)
 
     stem_pipeline = make_pipeline(TextNormalizer(), tfidf, LogisticRegression())  # LogisticRegression(C=100) or MultinomialNB()
     param_grid = {'logisticregression__C': [10, 50, 100],
@@ -98,7 +98,7 @@ def do_crossval():
     print(scores, scores.mean())
 
 if __name__ == '__main__':
-    do_gridsearch()
+    #do_gridsearch()
 
-    #do_crossval()
+    do_crossval()
 
