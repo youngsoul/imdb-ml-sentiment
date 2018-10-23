@@ -8,6 +8,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.naive_bayes import MultinomialNB
 from nltk import word_tokenize
 from sklearn.svm import SVC
+from TextNormalizer import TextNormalizer
 
 base_path = '/Volumes/MacBackup/aclImdb'
 
@@ -56,12 +57,13 @@ def do_gridsearch():
 {'logisticregression__C': 100, 'tfidfvectorizer__min_df': 2, 'tfidfvectorizer__ngram_range': (1, 4)}
 """
     df = read_df()
-    X = df['review'].apply(remove_html_lower)
+    X = df['review']
     y = df['sentiment']
     X_train, X_holdout, y_train, y_holdout = train_test_split(X, y, test_size=0.3, shuffle=True, stratify=y, random_state=222 )
+    tfidf = TfidfVectorizer(stop_words='english', min_df=2, max_df=0.8, ngram_range=(1,4))
 
-    stem_pipeline = make_pipeline(stemmed_tfidf, LogisticRegression())  # LogisticRegression(C=100) or MultinomialNB()
-    param_grid = {'logisticregression__C': [0.01, 10, 100],
+    stem_pipeline = make_pipeline(TextNormalizer(), tfidf, LogisticRegression())  # LogisticRegression(C=100) or MultinomialNB()
+    param_grid = {'logisticregression__C': [10, 50, 100],
                   'tfidfvectorizer__ngram_range': [(1, 1), (1, 2), (1, 3), (1, 4)],
                   'tfidfvectorizer__min_df': [2, 3, 4, 5]}
     cv = StratifiedShuffleSplit(n_splits=3, test_size=0.2)
@@ -74,26 +76,29 @@ def do_gridsearch():
 def do_crossval():
     """
         # MultinomialNB = 0.878
-    # LogisticRegression(C=100) = 0.90
+    # LogisticRegression(C=100) = 0.9029
     # SVC(kernel='linear', C=1) = DNF
     # LogisticRegression(C=100) w/ Stemming = 0.89
+    # LogisticRegression(C=100) w/o TextNormalizer 0.90
 
     :return:
     """
     df = read_df()
-    X = df['review'].apply(remove_html_lower)
+    # X = df['review'].apply(remove_html_lower)
+
+    X = df['review']
     y = df['sentiment']
     X_train, X_holdout, y_train, y_holdout = train_test_split(X, y, test_size=0.3, shuffle=True, stratify=y, random_state=222 )
 
     tfidf = TfidfVectorizer(stop_words='english', min_df=2, max_df=0.8, ngram_range=(1,4))
-    stem_pipeline = make_pipeline(tfidf, LogisticRegression(C=100))
+    stem_pipeline = make_pipeline(TextNormalizer(), tfidf, LogisticRegression(C=100))
     cv = StratifiedShuffleSplit(n_splits=3, test_size=0.2)
 
-    scores = cross_val_score(stem_pipeline, X_train, y_train, cv=cv, scoring='accuracy', n_jobs=-1)
+    scores = cross_val_score(stem_pipeline, X_train, y_train, cv=cv, scoring='accuracy', n_jobs=1)
     print(scores, scores.mean())
 
 if __name__ == '__main__':
-    # do_gridsearch()
+    do_gridsearch()
 
-    do_crossval()
+    #do_crossval()
 
