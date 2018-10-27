@@ -10,3 +10,9 @@ Also using material from *Applied Text Analysis with Python* and *Introduction t
 [Stanford IMDb](http://ai.stanford.edu/~amaas/data/sentiment/)
 
 
+
+## From RealPython Blog Post
+
+[Python Keras Text Classification](https://realpython.com/python-keras-text-classification/)
+
+

@@ -118,7 +118,7 @@ def make_predictions():
     y_holdout_list = y_holdout.tolist()
     for i, review in enumerate(X_holdout):
         prediction = model_pipeline.predict([review])
-        print(prediction, review)
+        print(prediction, (prediction==y_holdout_list[i]), review)
         review_predictions.append(prediction==y_holdout_list[i])
 
     print(f"Holdout Accuracy: {sum(review_predictions)/len(review_predictions)}")
