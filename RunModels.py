@@ -4,14 +4,18 @@ import nltk.stem
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split, StratifiedShuffleSplit, cross_val_score, GridSearchCV
 from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import make_pipeline
+from sklearn.pipeline import make_pipeline, make_union
 from sklearn.naive_bayes import MultinomialNB
 from nltk import word_tokenize
 from sklearn.svm import SVC
 from TextNormalizer import TextNormalizer
 from sklearn.dummy import DummyClassifier
+from transformers.LengthTransformer import AverageWordLengthExtractor, TextLengthExtractor
+from transformers.ColumnSelector import ColumnSelector
+import pickle
+import os
 
-base_path = '/Volumes/MacBackup/aclImdb'
+base_path = './data/stanford_imdb'
 
 english_stemmer = nltk.stem.SnowballStemmer('english')
 
@@ -106,6 +110,7 @@ def make_predictions():
     df = read_df()
 
     X = df['review']
+
     y = df['sentiment']
     X_train, X_holdout, y_train, y_holdout = train_test_split(X, y, test_size=0.3, shuffle=True, stratify=y, random_state=222 )
 
@@ -123,6 +128,48 @@ def make_predictions():
 
     print(f"Holdout Accuracy: {sum(review_predictions)/len(review_predictions)}")
     print("One run accuracy = 0.8959")
+
+
+def make_predictions_with_features():
+    # this function demonstrates how to make predictions from the hold out set
+    # as though we were looking at newly arriving reviews
+    # us the same train_test split as in do_crossval, but use the holdout this time.
+
+    df = read_df()
+
+    X = df.drop(['sentiment'], axis=1)
+    y = df['sentiment']
+    X_train, X_holdout, y_train, y_holdout = train_test_split(X, y, test_size=0.3, shuffle=True, stratify=y, random_state=222 )
+
+    if os.path.exists("./model_pipeline.pkl"):
+        with open("./model_pipeline.pkl", 'rb') as f:
+            model_pipeline = pickle.load(f)
+    else:
+
+        tfidf = TfidfVectorizer(stop_words='english', min_df=2, max_df=0.8, ngram_range=(1,4))
+        model_pipeline = make_pipeline(
+            make_union(
+                AverageWordLengthExtractor(),
+                TextLengthExtractor(),
+                make_pipeline(ColumnSelector(cols=['review'], drop_axis=True),TextNormalizer(), tfidf)
+            ),
+            LogisticRegression(C=100)
+        )
+
+        model_pipeline.fit(X_train, y_train)
+        with open("./model_pipeline.pkl", "wb") as f:
+            pickle.dump(model_pipeline, f)
+
+
+    review_predictions = []
+    y_holdout_list = y_holdout.tolist()
+    for i, review in enumerate(X_holdout['review']):
+        prediction = model_pipeline.predict(pd.DataFrame([review], columns=['review']))
+        print(prediction, (prediction==y_holdout_list[i]), review)
+        review_predictions.append(prediction==y_holdout_list[i])
+
+    print(f"Holdout Accuracy: {sum(review_predictions)/len(review_predictions)}")
+    print("Expected Holdout Accuracy about: 0.8959")
 
 
 
@@ -152,4 +199,6 @@ if __name__ == '__main__':
     # as expected since the positive/negative sampling is 50/50-ish.. the DummyClassifier should reflect that
     # this means the sentiment model is performing much better than the null accuracy
 
-    make_predictions()
+    # make_predictions()
+
+    make_predictions_with_features()
