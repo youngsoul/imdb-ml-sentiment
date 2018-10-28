@@ -243,3 +243,4 @@ fabric.properties
 # Editor-based Rest Client
 .idea/httpRequests
 
+/model_pipeline.pkl
