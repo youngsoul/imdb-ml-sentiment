@@ -25,3 +25,7 @@ Also using material from *Applied Text Analysis with Python* and *Introduction t
 Interesting [blog](https://zablo.net/blog/post/pandas-dataframe-in-scikit-learn-feature-union) about how to use Pandas DataFrames 
 
 [GitHub Repo](https://github.com/marrrcin/pandas-feature-union)
+
+
+
+git filter-branch --index-filter 'git rm -r --cached --ignore-unmatch model_pipeline.pkl' -f HEAD
