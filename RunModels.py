@@ -114,20 +114,40 @@ def make_predictions():
     y = df['sentiment']
     X_train, X_holdout, y_train, y_holdout = train_test_split(X, y, test_size=0.3, shuffle=True, stratify=y, random_state=222 )
 
-    tfidf = TfidfVectorizer(stop_words='english', min_df=2, max_df=0.8, ngram_range=(1,4))
-    model_pipeline = make_pipeline(TextNormalizer(), tfidf, LogisticRegression(C=100))
+    if os.path.exists("./model_pipeline.pkl"):
+        with open("./model_pipeline.pkl", 'rb') as f:
+            model_pipeline = pickle.load(f)
+    else:
 
-    model_pipeline.fit(X_train, y_train)
+        tfidf = TfidfVectorizer(stop_words='english', min_df=2, max_df=0.8, ngram_range=(1,4))
+        model_pipeline = make_pipeline(TextNormalizer(), tfidf, LogisticRegression(C=100))
+
+        model_pipeline.fit(X_train, y_train)
+        with open("./model_pipeline.pkl", "wb") as f:
+            pickle.dump(model_pipeline, f)
 
     review_predictions = []
+    false_positives = []
+    false_negatives = []
     y_holdout_list = y_holdout.tolist()
     for i, review in enumerate(X_holdout):
         prediction = model_pipeline.predict([review])
-        print(prediction, (prediction==y_holdout_list[i]), review)
+        #print(prediction, (prediction==y_holdout_list[i]), review)
         review_predictions.append(prediction==y_holdout_list[i])
+        if prediction == 1 and y_holdout_list[i] == 0:
+            # was falsely positive when it should have been negative
+            false_positives.append(review)
+            print(f"FP: {review}")
+        elif prediction == 0 and y_holdout_list[i] == 1:
+            # was falsely negative when it should have been postive
+            false_negatives.append(review)
+
+
 
     print(f"Holdout Accuracy: {sum(review_predictions)/len(review_predictions)}")
-    print("One run accuracy = 0.8959")
+    print(f"Number of FP: {len(false_positives)}")
+    print(f"Number of FN: {len(false_negatives)}")
+    print("Expected Holdout Accuracy accuracy = 0.8959")
 
 
 def make_predictions_with_features():
@@ -141,7 +161,7 @@ def make_predictions_with_features():
     y = df['sentiment']
     X_train, X_holdout, y_train, y_holdout = train_test_split(X, y, test_size=0.3, shuffle=True, stratify=y, random_state=222 )
 
-    if os.path.exists("./model_pipeline.pkl"):
+    if os.path.exists("./model_pipeline_features.pkl"):
         with open("./model_pipeline.pkl", 'rb') as f:
             model_pipeline = pickle.load(f)
     else:
@@ -157,7 +177,7 @@ def make_predictions_with_features():
         )
 
         model_pipeline.fit(X_train, y_train)
-        with open("./model_pipeline.pkl", "wb") as f:
+        with open("./model_pipeline_features.pkl", "wb") as f:
             pickle.dump(model_pipeline, f)
 
 
@@ -199,6 +219,6 @@ if __name__ == '__main__':
     # as expected since the positive/negative sampling is 50/50-ish.. the DummyClassifier should reflect that
     # this means the sentiment model is performing much better than the null accuracy
 
-    # make_predictions()
+    make_predictions()
 
-    make_predictions_with_features()
+    # make_predictions_with_features()

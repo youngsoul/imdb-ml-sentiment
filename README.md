@@ -28,4 +28,3 @@ Interesting [blog](https://zablo.net/blog/post/pandas-dataframe-in-scikit-learn-
 
 
 
-git filter-branch --index-filter 'git rm -r --cached --ignore-unmatch model_pipeline.pkl' -f HEAD
