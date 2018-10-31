@@ -28,3 +28,6 @@ Interesting [blog](https://zablo.net/blog/post/pandas-dataframe-in-scikit-learn-
 
 
 
+## Using XGBoost
+
+pip install xgboost
