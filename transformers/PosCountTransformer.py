@@ -18,7 +18,7 @@ class PosCountExtractor(BaseEstimator, TransformerMixin):
         }
 
     def get_feature_names(self):
-        return [self.col_name]
+        return [self.result_col_name]
 
     # function to check and get the part of speech tag count of a words in a given sentence
     def check_pos_tag(self, x):
