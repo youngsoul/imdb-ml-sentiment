@@ -6,6 +6,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 """
 https://github.com/datacamp/course-resources-ml-with-experts-budgets/blob/master/src/features/SparseInteractions.py
+https://github.com/drivendataorg/box-plots-sklearn/blob/master/src/features/SparseInteractions.py
 
 SparseMatrix version of PolynomialFeatures.  
 
@@ -14,7 +15,20 @@ PolynomialFeatures does not work with a sparse matrix, such as a DTM, from a vec
 
 Instead, this class handles what the PolynomialFeatures does, but on a sparse matrix.
 
+It's time to add interaction features to your model. The PolynomialFeatures object in scikit-learn does just that, but here you're going to use a custom interaction object, SparseInteractions. Interaction terms are a statistical tool that lets your model express what happens if two features appear together in the same row.
+
+SparseInteractions does the same thing as PolynomialFeatures, but it uses sparse matrices to do so. You can get the code for SparseInteractions at this GitHub Gist.
+
+PolynomialFeatures and SparseInteractions both take the argument degree, which tells them what polynomial degree of interactions to compute.
+
+You're going to consider interaction terms of degree=2 in your pipeline. You will insert these steps after the preprocessing steps you've built out so far, but before the classifier steps.
+
+Pipelines with interaction terms take a while to train (since you're making n features into n-squared features!), so as long as you set it up right, we'll do the heavy lifting and tell you what your score is!
+
+
+
 """
+
 
 class SparseInteractions(BaseEstimator, TransformerMixin):
     def __init__(self, degree=2, feature_name_separator="_"):
